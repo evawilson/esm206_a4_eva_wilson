@@ -1,0 +1,97 @@
+---
+title: "Juvenile Snowshoe Hares: Exploratory Report"
+author: "Eva Wilson"
+date: "11/4/2021"
+output: 
+  html_document: 
+    toc: yes
+    theme: readable
+    code_folding: hide
+---
+
+```{r setup, include=FALSE, message = FALSE, error = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, error = FALSE)
+
+# Attach packages
+library(here)
+library(janitor)
+library(tidyverse)
+library(effsize)
+library(broom)
+library(palmerpenguins)
+library(ggbeeswarm)
+library(kableExtra)
+library(lubridate)
+```
+
+## Introduction 
+
+A 4 - 5 sentence "mini-introduction" to what this study is exploring, including basic background information about the subject, site and study (with citations as needed), and a brief overview of what is included in the exploratory report. You should probably do this last so you know what’s contained in the report.
+
+## Data
+
+In this “mini exploratory report,” we explore the counts and sizes of juvenile snowshoe hares recorded from 1998 - 2012 at Bonanza Creek LTER. Bonanza Creek LTER is part of the US Long Term Ecological Research Network. The data citation and link to metadata (including variable definitions) are below.
+
+**Data citation**: Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017. Snowshoe hare physical data in Bonanza Creek Experimental Forest: 1999-Present ver 22. Environmental Data Initiative. https://doi.org/10.6073/pasta/03dce4856d79b91557d8e6ce2cbcdc14
+
+**Link to metadata**: https://portal.edirepository.org/nis/metadataviewer?packageid=knb-lter-bnz.55.22
+
+## Juvenile hare initial investigation
+
+Annual juvenile hare trap counts. Count the total number of juvenile hare trappings during each year of the study, and create a finalized data visualization of the counts by year. Include a figure caption below the figure in your report. 
+
+```{r}
+# Read in the data
+hares <- read.csv(here("data","bonanza_hares.csv")) 
+```
+
+### Annual juvenile hare trap counts
+
+```{r}
+hares_annual <- hares %>% 
+  mutate(date = mdy(date)) %>% 
+  mutate(year = year(date)) %>% 
+  group_by(year) %>% 
+  summarize(sample_size = n())
+            
+hares_annual
+```
+```{r}
+ggplot(data = hares_annual, 
+       aes(x = year, y = sample_size)) +
+  geom_col(fill = "royalblue2") +
+  labs(x = "Year",
+       y = "Trappings (#)",
+       title = "Juvenille Snowshoe Hare Trappings (WILSON)",
+       caption = "Kielland, K., et. al. 2017. Snowshoe hare physical data in
+       Bonanza Creek Experimental Forest: 1999-Present ver 22. 
+       Environmental Data Initiative.") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+**Figure 1: Juvenille Snowshoe Hare Trappings**: Number of Juvenille Snowshoe Hare Trappings between 1998-2012. The number of hare trappings has generally increased between years 2002-2011, followed by a sharp decline in 2012. 
+
+```{r}
+hares_stats <- hares_annual %>% 
+  summarize(mean = signif(mean(sample_size, na.rm = TRUE),2), 
+            median = signif(median(sample_size, na.rm = TRUE),2), 
+            sd = signif(sd(sample_size),2)) 
+```
+
+The number of juvenile snowshoe hare trappings has fluctuated between 1998-2012. In general, we see a decrease in the number of hare trappings between 1999-2002, a steady increase between 2002-2011, and a sharp decline from 2011-2012. The minimum number of trappings (38) occurred in 2012 and the maximum number of trappings occurred in 2009 (410). The mean value is 210 and the median 180. To standardize juvenile hare population in future analyses, it is imperative that we set and collect the same number of traps each year to ensure data is consistent YoY. 
+
+### Juvenile Hare Weights by Sex and Site 
+
+```{r}
+hares_sex_site <- hares %>% 
+  group_by(sex, grid) %>% 
+  summarize(count = n())
+
+ggplot(data = hares_sex_site, aes(x = sex, y = grid) +
+       geom_line(color = sex)
+```
+
+Visualize juvenile hare weights. Create a finalized data visualization (or visualizations) in which you compare **juvenile hare weights by sex and site (grid)** (ignore other variables). You should include groups where these variables are not recorded (`NA`). Include finalized figure captions below your visualization(s).
+
+Then, in 2 - 3 sentences below your visualization(s) describe in text the main takeaways that you would want the audience to understand from your figures.
+
